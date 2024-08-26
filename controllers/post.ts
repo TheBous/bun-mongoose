@@ -1,9 +1,8 @@
 import { v4 as uuid4 } from 'uuid';
-import type { Post } from "../types";
-import { InMemoryRepository } from "../utils/inMemoryDb";
+import connect from "../utils/db";
 
 const postController = async (req: Request) => {
-    const repo = InMemoryRepository.getInstance();
+    const db = connect();
 
     if (req.method === "GET") {
         const url = new URL(req.url);
@@ -13,12 +12,14 @@ const postController = async (req: Request) => {
         const postId = params.get("post_id");
 
         if (postId) {
-            const post = await repo.getPost(postId);
+            const query = db.query("SELECT * FROM posts WHERE id = ?");
+            const post = query.get(postId);
             if (!post) return Response.json({ success: false, data: "Post not found!" }, { status: 404 });
 
             return Response.json({ success: true, data: { post } });
         } else if (authorId) {
-            const posts = await repo.getPosts(authorId)
+            const query = db.query("SELECT * FROM posts WHERE authorId = ?");
+            const posts = query.all(authorId);
             return Response.json({ success: true, data: { posts } });
         } else {
             return Response.json({ success: false, data: "Invalid query!" }, { status: 400 });
@@ -33,18 +34,12 @@ const postController = async (req: Request) => {
 
         const postId = uuid4();
 
-        const newPost: Post = {
-            id: postId,
-            title,
-            content,
-            authorId
-        };
-
-        await repo.createPost(newPost);
+        const query = db.query("INSERT INTO posts (id, title, content, authorId) VALUES (?, ?, ?, ?)");
+        query.run(postId, title, content, authorId);
 
         return Response.json({ success: true, data: "Post saved!" }, { status: 200 });
     } else {
-        return Response.json({ success: false, data: "Method not allowed!" }, { status: 405 })
+        return Response.json({ success: false, data: "Method not allowed!" }, { status: 405 });
     }
 };
 
