@@ -14,20 +14,22 @@ const postController = async (req: Request) => {
 
         if (postId) {
             const post = await repo.getPost(postId);
-            if (!post) return new Response("Post not found!", { status: 404 });
+            if (!post) return Response.json({ success: false, data: "Post not found!" }, { status: 404 });
 
             return Response.json({ success: true, data: { post } });
         } else if (authorId) {
             const posts = await repo.getPosts(authorId)
             return Response.json({ success: true, data: { posts } });
-        } else return new Response("Invalid query!", { status: 400 });
+        } else {
+            return Response.json({ success: false, data: "Invalid query!" }, { status: 400 });
+        }
     } else if (req.method === "POST") {
         const body = await req.json();
         const { title, content, authorId } = body;
 
-        if (!title) return new Response("Title is required!", { status: 400 });
-        if (!content) return new Response("Content is required!", { status: 400 });
-        if (!authorId) return new Response("Author ID is required!", { status: 400 });
+        if (!title) return Response.json({ success: false, data: "Title is required!" }, { status: 400 });
+        if (!content) return Response.json({ success: false, data: "Content is required!" }, { status: 400 });
+        if (!authorId) return Response.json({ success: false, data: "Author ID is required!" }, { status: 400 });
 
         const postId = uuid4();
 
@@ -40,9 +42,9 @@ const postController = async (req: Request) => {
 
         await repo.createPost(newPost);
 
-        return Response.json({ success: true, data: "Post saved!" });
+        return Response.json({ success: true, data: "Post saved!" }, { status: 200 });
     } else {
-        return new Response("Method not allowed!", { status: 405 });
+        return Response.json({ success: false, data: "Method not allowed!" }, { status: 405 })
     }
 };
 

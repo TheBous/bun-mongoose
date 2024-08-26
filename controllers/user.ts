@@ -13,7 +13,7 @@ const userController = async (req: Request) => {
 
         if (userId) {
             const user = await repo.getUser(userId);
-            if (!user) return new Response("User not found!", { status: 404 });
+            if (!user) return Response.json({ success: false, error: "User not found!" }, { status: 404 });
 
             return Response.json({ success: true, data: { user } });
         } else {
@@ -26,8 +26,8 @@ const userController = async (req: Request) => {
         const body = await req.json();
         const { name, email } = body;
 
-        if (!name) return new Response("Name is required!", { status: 400 });
-        if (!email) return new Response("Email is required!", { status: 400 });
+        if (!name) return Response.json({ success: false, error: "Name is required!" }, { status: 400 });
+        if (!email) return Response.json({ success: false, error: "Email is required!" }, { status: 400 });
 
         const userId = uuid4();
 
@@ -41,7 +41,7 @@ const userController = async (req: Request) => {
 
         return Response.json({ success: true, data: "User saved!" });
     } else {
-        return new Response("Method not allowed!", { status: 405 });
+        return Response.json({ success: false, error: "Method not allowed!" }, { status: 405 });
     }
 };
 
