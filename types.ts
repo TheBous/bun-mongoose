@@ -5,15 +5,16 @@ export interface User {
 }
 
 export interface Post {
-    id: number;
+    id: string;
     title: string;
     content: string;
-    authorId: number;
+    authorId: string;
 }
 
 export interface Repository {
     getUser(id: string): Promise<User | null>;
     createUser(user: User): Promise<User>;
-    getPosts(authorId: number): Promise<Post[]>;
+    getPost(postId: string): Promise<Post | null>;
+    getPosts(authorId: string): Promise<Post[]>;
     createPost(post: Post): Promise<Post>;
 }

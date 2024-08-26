@@ -1,21 +1,46 @@
-import { Animal } from "../models/Animal";
+import { v4 as uuid4 } from 'uuid';
+import type { Post } from "../types";
+import { InMemoryRepository } from "../utils/inMemoryDb";
 
 const postController = async (req: Request) => {
+    const repo = InMemoryRepository.getInstance();
+
     if (req.method === "GET") {
-        const animals = await Animal.find();
-        console.info("All animals:", animals);
-        return Response.json({ success: true, data: "Animal page!" });
+        const url = new URL(req.url);
+        const params = url.searchParams;
+
+        const authorId = params.get("author_id");
+        const postId = params.get("post_id");
+
+        if (postId) {
+            const post = await repo.getPost(postId);
+            if (!post) return new Response("Post not found!", { status: 404 });
+
+            return Response.json({ success: true, data: { post } });
+        } else if (authorId) {
+            const posts = await repo.getPosts(authorId)
+            return Response.json({ success: true, data: { posts } });
+        } else return new Response("Invalid query!", { status: 400 });
     } else if (req.method === "POST") {
         const body = await req.json();
-        const { name, sound } = body;
-        if (!name) return new Response("Name is required!", { status: 400 });
-        if (!sound) return new Response("Sound is required!", { status: 400 });
+        const { title, content, authorId } = body;
 
-        const animal = new Animal({ name: "dog", sound: "woof" });
-        await animal.save();
-        console.info(`New animal saved with name: ${animal.name}`);
+        if (!title) return new Response("Title is required!", { status: 400 });
+        if (!content) return new Response("Content is required!", { status: 400 });
+        if (!authorId) return new Response("Author ID is required!", { status: 400 });
 
-        return Response.json({ success: true, data: "Animal saved!" });
+        const postId = uuid4();
+
+        const newPost: Post = {
+            id: postId,
+            title,
+            content,
+            authorId
+        };
+
+        await repo.createPost(newPost);
+
+        return Response.json({ success: true, data: "Post saved!" });
     } else {
         return new Response("Method not allowed!", { status: 405 });
     }

@@ -34,7 +34,14 @@ export class InMemoryRepository implements Repository {
         });
     }
 
-    async getPosts(authorId: number): Promise<Post[]> {
+    async getPost(postId: string): Promise<Post | null> {
+        return new Promise((resolve) => {
+            const post = this.posts.find((post) => post.id === postId);
+            resolve(post || null);
+        });
+    }
+
+    async getPosts(authorId: string): Promise<Post[]> {
         return new Promise((resolve) => {
             const posts = this.posts.filter((post) => post.authorId === authorId);
             resolve(posts);
