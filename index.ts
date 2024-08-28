@@ -1,11 +1,9 @@
 import postController from "./controllers/post";
 import userController from "./controllers/user";
-import connect from "./utils/db";
+import dbConnect from "./utils/db";
 import { InMemoryRepository } from "./utils/inMemoryDb";
 
-await connect();
-
-InMemoryRepository.getInstance();
+await dbConnect();
 
 const server = Bun.serve({
     port: 8080,

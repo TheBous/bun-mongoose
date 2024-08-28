@@ -1,11 +1,11 @@
 export interface User {
-    id: string;
+    _id: string;
     name: string;
     email: string;
 }
 
 export interface Post {
-    id: string;
+    _id: string;
     title: string;
     content: string;
     authorId: string;

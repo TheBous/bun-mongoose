@@ -1,9 +1,7 @@
 import { v4 as uuid4 } from 'uuid';
-import connect from "../utils/db";
+import { User } from '../models/User';
 
 const userController = async (req: Request) => {
-    const db = connect();
-
     if (req.method === "GET") {
         const url = new URL(req.url);
         const params = url.searchParams;
@@ -11,14 +9,12 @@ const userController = async (req: Request) => {
         const userId = params.get("user_id");
 
         if (userId) {
-            const query = db.query("SELECT * FROM users WHERE id = ?");
-            const user = await query.get(userId);
+            const user = await User.findById(userId);
             if (!user) return Response.json({ success: false, error: "User not found!" }, { status: 404 });
 
             return Response.json({ success: true, data: { user } });
         } else {
-            const query = db.query("SELECT * FROM users");
-            const users = query.all();
+            const users = await User.find();
             return Response.json({ success: true, data: { users } });
         }
 
@@ -31,8 +27,13 @@ const userController = async (req: Request) => {
 
         const userId = uuid4();
 
-        const query = db.query("INSERT INTO users (id, name, email) VALUES (?, ?, ?)");
-        query.run(userId, name, email);
+        const user = new User({
+            id: userId,
+            name,
+            email
+        });
+
+        await user.save();
 
         return Response.json({ success: true, data: "User saved!" });
     } else {

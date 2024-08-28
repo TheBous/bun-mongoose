@@ -1,31 +1,20 @@
-import { Database } from "bun:sqlite";
+import type { ConnectOptions } from 'mongoose';
+import mongoose from 'mongoose';
 
-const connect = () => {
-    if (!process.env.SQLITE_FILE) throw new Error("No database file specified");
-    console.info("Connecting to SQLite...");
-    const db = new Database(process.env.SQLITE_FILE);
+async function dbConnect() {
+    if (!process.env.MONGO_URL || !process.env.MONGO_URL) {
+        throw new Error(
+            'Please define the SECRET_DATABASE_URL && SECRET_DATABASE_NAME environment variables.'
+        );
+    }
 
-    console.info("Connected to SQLite!");
+    const opts = {
+        dbName: process.env.DB_NAME
+    } as ConnectOptions;
 
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL
-        )
-    `);
-
-    db.run(`
-        CREATE TABLE IF NOT EXISTS posts (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL,
-            authorId TEXT,
-            FOREIGN KEY (authorId) REFERENCES users (id)
-        )
-    `);
-
-    return db;
+    await mongoose.connect(process.env.MONGO_URL, opts);
+    console.info(
+        `Connected to MongoDB database: ${process.env.SECRET_DATABASE_NAME} in mode: ${process.env.NODE_ENV}`
+    );
 }
-
-export default connect;
+export default dbConnect;
